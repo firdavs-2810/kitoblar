@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitoblar Portali</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --text-color: #ffffff;
+            --text-sub: rgba(255, 255, 255, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --card-inner: rgba(20, 20, 35, 0.8);
+            --btn-bg: linear-gradient(90deg, #00c6ff, #0072ff);
+            --btn-text: #ffffff;
+        }
+
+        body.light-mode {
+            --bg-gradient: linear-gradient(135deg, #e0eafc, #cfdef3, #eef2f3);
+            --text-color: #1d1d1f;
+            --text-sub: rgba(0, 0, 0, 0.65);
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --card-inner: rgba(255, 255, 255, 0.75);
+            --btn-bg: linear-gradient(90deg, #0071e3, #42a5f5);
+            --btn-text: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Controls Area (Tepa O'ng) */
+        .top-controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .btn-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 10px 18px;
+            border-radius: 30px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-glass:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Admin Form Panel */
+        .admin-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 40px;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-panel h3 {
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input[type="text"], input[type="file"], input[type="password"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-color);
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-sub);
+        }
+
+        .btn-submit {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        /* Books Grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* RGB Glassmorphism Card */
+        .book-card {
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            transition: transform 0.3s ease;
+        }
+
+        /* RGB Glowing Border Effect */
+        .book-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg, 
+                transparent 0deg, 
+                #ff0055 90deg, 
+                #00e5ff 180deg, 
+                #7b00ff 270deg, 
+                transparent 360deg
+            );
+            animation: rotate 5s linear infinite;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -2;
+        }
+
+        .book-card::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: var(--card-inner);
+            backdrop-filter: blur(20px);
+            border-radius: 22px;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .book-card:hover::before {
+            opacity: 1;
+        }
+
+        .book-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .book-author {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            margin-bottom: 15px;
+        }
+
+        .card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .download-btn {
+            background: var(--btn-bg);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .edit-btn, .delete-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .delete-btn { background: rgba(255, 59, 48, 0.3); }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .modal.active { opacity: 1; pointer-events: all; }
+
+        .modal-box {
+            background: var(--card-inner);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tepa O'ng Kontrollar -->
+    <div class="top-controls">
+        <button class="btn-glass" id="adminAuthBtn" onclick="openLoginModal()">🔑 Admin Kirish</button>
+        <button class="btn-glass" onclick="toggleTheme()"><span id="themeIcon">🌙</span> <span id="themeText">Tun</span></button>
+    </div>
+
+    <h1>📚 Kitoblar Kutubxonasi</h1>
+
+    <!-- Admin Kitob Qo'shish Paneli -->
+    <div class="admin-panel" id="adminPanel">
+        <h3>➕ Yangi Kitob Qo'shish (Admin)</h3>
+        <div class="form-group">
+            <input type="text" id="bookTitleInput" placeholder="Kitob nomi">
+            <input type="text" id="bookAuthorInput" placeholder="Muallif ismi">
+            <input type="file" id="bookFileInput" accept=".pdf,.epub,.docx,.txt">
+            <button class="btn-submit" onclick="addNewBook()">Kitobni Yuklash</button>
+        </div>
+    </div>
+
+    <!-- Kitoblar Ro'yxati -->
+    <div class="books-grid" id="booksGrid"></div>
+
+    <!-- Admin Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 15px;">Admin Tizimiga Kirish</h3>
+            <div class="form-group">
+                <input type="text" id="adminUsername" placeholder="Login">
+                <input type="password" id="adminPassword" placeholder="Parol">
+                <button class="btn-submit" onclick="checkAdmin()">Kirish</button>
+                <button class="btn-glass" onclick="closeLoginModal()" style="margin-top: 5px;">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdmin = false;
+        
+        // Boshlang'ich namuna kitoblar
+        let books = JSON.parse(localStorage.getItem('my_books')) || [
+            { id: 1, title: "O'tkan Kunlar", author: "Abdulla Qodiriy", fileData: "#", fileName: "otkan_kunlar.pdf" },
+            { id: 2, title: "Sariq Devni Minib", author: "Xudoyberdi To'xtaboyev", fileData: "#", fileName: "sariq_dev.pdf" }
+        ];
+
+        // Dastlabki yuklash
+        renderBooks();
+
+        // Tun/Kun Rejimi
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            document.getElementById('themeIcon').innerText = isLight ? '☀️' : '🌙';
+            document.getElementById('themeText').innerText = isLight ? 'Kun' : 'Tun';
+        }
+
+        // Login Modal
+        function openLoginModal() {
+            if (isAdmin) {
+                isAdmin = false;
+                document.getElementById('adminPanel').classList.remove('active');
+                document.getElementById('adminAuthBtn').innerText = '🔑 Admin Kirish';
+                renderBooks();
+            } else {
+                document.getElementById('loginModal').classList.add('active');
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        // Yangilangan Admin Login va Parol tekshiruvi
+        function checkAdmin() {
+            const user = document.getElementById('adminUsername').value;
+            const pass = document.getElementById('adminPassword').value;
+
+            // Login: cocos , Parol: 2810
+            if (user === 'cocos' && pass === '2810') {
+                isAdmin = true;
+                document.getElementById('adminPanel').classList.add('active');
+                document.getElementById('adminAuthBtn').innerText = '🚪 Chiqish';
+                closeLoginModal();
+                renderBooks();
+                document.getElementById('adminUsername').value = '';
+                document.getElementById('adminPassword').value = '';
+            } else {
+                alert('Login yoki parol noto\'g\'ri!');
+            }
+        }
+
+        // Kitobni chizish
+        function renderBooks() {
+            const grid = document.getElementById('booksGrid');
+            grid.innerHTML = '';
+
+            books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                
+                let adminControls = '';
+                if (isAdmin) {
+                    adminControls = `
+                        <div>
+                            <button class="edit-btn" onclick="editBookTitle(${book.id})">✏️ Tahrirlash</button>
+                            <button class="delete-btn" onclick="deleteBook(${book.id})">🗑️ O'chirish</button>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">${book.author}</div>
+                    </div>
+                    <div class="card-bottom">
+                        <a class="download-btn" href="${book.fileData}" download="${book.fileName}">📥 Yuklab olish</a>
+                        ${adminControls}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Yangi kitob qo'shish
+        function addNewBook() {
+            const title = document.getElementById('bookTitleInput').value;
+            const author = document.getElementById('bookAuthorInput').value;
+            const fileInput = document.getElementById('bookFileInput');
+
+            if (!title || !author || fileInput.files.length === 0) {
+                alert('Barcha maydonlarni to\'ldiring va fayl tanlang!');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const newBook = {
+                    id: Date.now(),
+                    title: title,
+                    author: author,
+                    fileData: e.target.result,
+                    fileName: file.name
+                };
+
+                books.unshift(newBook);
+                saveAndRender();
+                
+                // Formani tozalash
+                document.getElementById('bookTitleInput').value = '';
+                document.getElementById('bookAuthorInput').value = '';
+                fileInput.value = '';
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Nomni o'zgartirish (Faqat Admin)
+        function editBookTitle(id) {
+            const book = books.find(b => b.id === id);
+            if (!book) return;
+
+            const newTitle = prompt('Yangi kitob nomini kiriting:', book.title);
+            if (newTitle && newTitle.trim() !== '') {
+                book.title = newTitle.trim();
+                saveAndRender();
+            }
+        }
+
+        // Kitobni o'chirish (Faqat Admin)
+        function deleteBook(id) {
+            if (confirm('Rostdan ham ushbu kitobni o\'chirmoqchimisiz?')) {
+                books = books.filter(b => b.id !== id);
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('my_books', JSON.stringify(books));
+            renderBooks();
+        }
+    </script>
+</body>
+</html>
