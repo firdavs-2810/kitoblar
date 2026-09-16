@@ -100,6 +100,40 @@
             gap: 12px;
         }
 
+        .file-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input-group input[type="url"] {
+            flex: 1;
+        }
+
+        .file-select-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .file-select-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        #uploadStatus {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-top: -5px;
+        }
+
         input[type="text"], input[type="url"], input[type="password"] {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--glass-border);
@@ -190,7 +224,16 @@
         .book-author {
             font-size: 0.9rem;
             color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+
+        .download-count {
+            font-size: 0.85rem;
+            color: var(--text-sub);
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .card-bottom {
@@ -256,7 +299,7 @@
 
     <!-- Firebase SDK (v8) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
@@ -272,7 +315,16 @@
         <div class="form-group">
             <input type="text" id="bookTitleInput" placeholder="Kitob nomi">
             <input type="text" id="bookAuthorInput" placeholder="Muallif ismi">
-            <input type="url" id="bookLinkInput" placeholder="Kitob silkasi (https://...)">
+            
+            <div class="file-input-group">
+                <input type="url" id="bookLinkInput" placeholder="Kitob fayli silkasi (https://...)">
+                <label class="file-select-btn">
+                    📁 Fayl yuklash
+                    <input type="file" id="githubFileInput" style="display: none;" onchange="uploadToGitHub(this)">
+                </label>
+            </div>
+            <div id="uploadStatus"></div>
+
             <button class="btn-submit" id="uploadBtn" onclick="addNewBook()">Kitobni Qo'shish</button>
         </div>
     </div>
@@ -292,10 +344,10 @@
     </div>
 
     <script>
-        // Berilgan Firebase konfiguratsiyangiz ulandi
         const firebaseConfig = {
             apiKey: "AIzaSyDiv1_SHvvNrAg_hU60qI19IAtrKjIAaKY",
             authDomain: "adwawdaw-eef09.firebaseapp.com",
+            databaseURL: "https://adwawdaw-eef09-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "adwawdaw-eef09",
             storageBucket: "adwawdaw-eef09.firebasestorage.app",
             messagingSenderId: "446197877477",
@@ -303,16 +355,92 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const db = firebase.database();
 
         let isAdmin = false;
         let globalBooks = [];
 
-        db.collection("books").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        // GitHub Integratsiyasi
+        const GITHUB_TOKEN = "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";
+        const GITHUB_USERNAME = "firdavs-2810";
+        const GITHUB_REPO = "source";
+
+        async function uploadToGitHub(fileInput) {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('uploadStatus');
+            const linkInput = document.getElementById('bookLinkInput');
+            const submitBtn = document.getElementById('uploadBtn');
+
+            statusDiv.innerHTML = "⏳ Fayl GitHub'ga yuklanmoqda...";
+            statusDiv.style.color = "#00c6ff";
+            submitBtn.disabled = true;
+
+            try {
+                // Faylni Base64 ga aylantirish
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                
+                reader.onload = async function () {
+                    const base64Content = reader.result.split(',')[1];
+                    const fileName = Date.now() + "_" + file.name.replace(/\s+/g, "_");
+                    const path = `files/${fileName}`;
+
+                    const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${path}`;
+
+                    const response = await fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Authorization": `token ${GITHUB_TOKEN}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: `Upload file: ${fileName}`,
+                            content: base64Content
+                        })
+                    });
+
+                    if (response.ok) {
+                        const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${path}`;
+                        linkInput.value = rawUrl;
+                        statusDiv.innerHTML = "✅ Fayl muvaffaqiyatli yuklandi!";
+                        statusDiv.style.color = "#4caf50";
+                    } else {
+                        const errorData = await response.json();
+                        statusDiv.innerHTML = "❌ Yuklashda xatolik: " + (errorData.message || "Noma'lum xato");
+                        statusDiv.style.color = "#f44336";
+                    }
+                    submitBtn.disabled = false;
+                    fileInput.value = "";
+                };
+
+                reader.onerror = function () {
+                    statusDiv.innerHTML = "❌ Faylni o'qishda xatolik yuz berdi.";
+                    statusDiv.style.color = "#f44336";
+                    submitBtn.disabled = false;
+                };
+
+            } catch (error) {
+                statusDiv.innerHTML = "❌ Xatolik: " + error.message;
+                statusDiv.style.color = "#f44336";
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Realtime Database-dan kitoblarni real-vaqt rejimida olish
+        db.ref("books").on("value", (snapshot) => {
             globalBooks = [];
-            snapshot.forEach(doc => {
-                globalBooks.push({ id: doc.id, ...doc.data() });
-            });
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    globalBooks.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                // Yangi qo'shilgan kitoblarni tepada ko'rsatish uchun tartibni teskari qilamiz
+                globalBooks.reverse();
+            }
             renderBooks(globalBooks);
         });
 
@@ -370,24 +498,53 @@
                 if (isAdmin) {
                     adminControls = `
                         <div>
-                            <button class="edit-btn" onclick="editBookTitle('${book.id}', '${book.title}')">✏️</button>
+                            <button class="edit-btn" onclick="editBookTitle('${book.id}', '${escapeHtml(book.title)}')">✏️</button>
                             <button class="delete-btn" onclick="deleteBook('${book.id}')">🗑️</button>
                         </div>
                     `;
                 }
 
+                const downloads = book.downloads || 0;
+
                 card.innerHTML = `
                     <div>
-                        <div class="book-title">${book.title}</div>
-                        <div class="book-author">${book.author}</div>
+                        <div class="book-title">${escapeHtml(book.title)}</div>
+                        <div class="book-author">${escapeHtml(book.author)}</div>
+                        <div class="download-count">📥 <span>${downloads}</span> marta yuklangan</div>
                     </div>
                     <div class="card-bottom">
-                        <a class="download-btn" href="${book.linkUrl}" target="_blank" rel="noopener noreferrer">🔗 Kitobni ochish</a>
+                        <a href="${escapeHtml(book.linkUrl)}" target="_blank" rel="noopener noreferrer" class="download-btn">📥 Tortib olish</a>
                         ${adminControls}
                     </div>
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        async function downloadFile(id, url, title) {
+            try {
+                // Realtime Database-da downloads sonini 1 ga oshirish (atomic transaction)
+                db.ref(`books/${id}/downloads`).transaction((currentDownloads) => {
+                    return (currentDownloads || 0) + 1;
+                });
+
+                // Faylni yuklab olish
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `${title}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (error) {
+                // CORS cheklovi bo'lsa, to'g'ridan-to'g'ri yangi oynada ochish
+                window.open(url, '_blank');
+            }
         }
 
         async function addNewBook() {
@@ -405,18 +562,21 @@
                 uploadBtn.innerText = 'Saqlanmoqda...';
                 uploadBtn.disabled = true;
 
-                await db.collection("books").add({
+                // Realtime Database-ga yangi kitob qo'shish
+                await db.ref("books").push({
                     title: title,
                     author: author,
                     linkUrl: linkUrl,
-                    createdAt: new Date()
+                    downloads: 0,
+                    createdAt: Date.now()
                 });
 
-                alert('Kitob silkasi muvaffaqiyatli qo\'shildi!');
+                alert('Kitob muvaffaqiyatli qo\'shildi!');
 
                 document.getElementById('bookTitleInput').value = '';
                 document.getElementById('bookAuthorInput').value = '';
                 document.getElementById('bookLinkInput').value = '';
+                document.getElementById('uploadStatus').innerHTML = '';
             } catch (error) {
                 console.error(error);
                 alert('Qo\'shishda xatolik yuz berdi: ' + error.message);
@@ -429,7 +589,7 @@
         async function editBookTitle(id, oldTitle) {
             const newTitle = prompt('Yangi kitob nomini kiriting:', oldTitle);
             if (newTitle && newTitle.trim() !== '') {
-                await db.collection("books").doc(id).update({
+                await db.ref(`books/${id}`).update({
                     title: newTitle.trim()
                 });
             }
@@ -438,11 +598,15 @@
         async function deleteBook(id) {
             if (confirm('Rostdan ham ushbu kitobni o\'chirmoqchimisiz?')) {
                 try {
-                    await db.collection("books").doc(id).delete();
+                    await db.ref(`books/${id}`).remove();
                 } catch (error) {
                     console.error(error);
                 }
             }
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
