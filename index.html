@@ -6,44 +6,106 @@
     <title>Kitoblar Portali</title>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            /* Sokin tungi orqa fon */
+            --bg-main: #0B101E;
             --text-color: #ffffff;
             --text-sub: rgba(255, 255, 255, 0.7);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --card-inner: rgba(20, 20, 35, 0.8);
-            --btn-bg: linear-gradient(90deg, #00c6ff, #0072ff);
+            
+            /* Glassmorphism o'zgaruvchilar */
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover-border: rgba(72, 198, 239, 0.6); /* Psixologik qulay yumshoq havorang */
+            --glass-hover-shadow: rgba(72, 198, 239, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.4);
+            --card-inner: rgba(11, 16, 30, 0.6);
+            
+            /* Liquid Blobs ranglari (Dark) */
+            --blob-1: #2E5B99;
+            --blob-2: #6B4984;
+            
+            /* Tugmalar */
+            --btn-bg: rgba(255, 255, 255, 0.1);
             --btn-text: #ffffff;
+            --btn-action: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --btn-hover-action: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); /* Yalpiz/Yashil - xotirjamlik va muvaffaqiyat */
         }
 
         body.light-mode {
-            --bg-gradient: linear-gradient(135deg, #e0eafc, #cfdef3, #eef2f3);
-            --text-color: #1d1d1f;
-            --text-sub: rgba(0, 0, 0, 0.65);
-            --glass-bg: rgba(255, 255, 255, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --card-inner: rgba(255, 255, 255, 0.75);
-            --btn-bg: linear-gradient(90deg, #0071e3, #42a5f5);
+            /* Sokin kunduzgi orqa fon */
+            --bg-main: #F4F7F6;
+            --text-color: #2c3e50;
+            --text-sub: rgba(44, 62, 80, 0.7);
+            
+            /* Glassmorphism o'zgaruvchilar */
+            --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(255, 255, 255, 1);
+            --glass-hover-border: rgba(111, 134, 214, 0.8);
+            --glass-hover-shadow: rgba(111, 134, 214, 0.3);
+            --glass-shadow: rgba(144, 164, 174, 0.2);
+            --card-inner: rgba(255, 255, 255, 0.7);
+            
+            /* Liquid Blobs ranglari (Light) */
+            --blob-1: #a1c4fd;
+            --blob-2: #c2e9fb;
+
+            /* Tugmalar */
+            --btn-bg: rgba(255, 255, 255, 0.8);
             --btn-text: #ffffff;
+            --btn-action: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --btn-hover-action: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            transition: background 0.3s, color 0.3s;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         body {
-            background: var(--bg-gradient);
+            background-color: var(--bg-main);
             color: var(--text-color);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 60px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
+            overflow-x: hidden;
+        }
+
+        /* LIQUID GLASS ORQA FON ELEMENTLARI */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: float 15s ease-in-out infinite alternate;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--blob-1);
+            top: 5%;
+            left: -5%;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--blob-2);
+            bottom: -10%;
+            right: -5%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -50px) scale(1.1); }
+            100% { transform: translate(-30px, 30px) scale(0.9); }
         }
 
         .top-controls {
@@ -51,249 +113,281 @@
             top: 25px;
             right: 25px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             z-index: 100;
         }
 
+        /* Glass tugmalar */
         .btn-glass {
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
-            padding: 10px 18px;
+            padding: 12px 22px;
             border-radius: 30px;
             color: var(--text-color);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 500;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px var(--glass-shadow);
         }
 
-        .btn-glass:hover { transform: scale(1.05); }
+        .btn-glass:hover {
+            transform: scale(1.08) translateY(-2px);
+            background: var(--glass-hover-border);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 10px 25px var(--glass-hover-shadow);
+        }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            margin-top: 20px;
-            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            font-size: 2.8rem;
+            margin-bottom: 40px;
+            margin-top: 10px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            font-weight: 700;
         }
 
+        /* Admin Paneli Glassmorphism */
         .admin-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: 24px;
+            padding: 30px;
             width: 100%;
             max-width: 600px;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             display: none;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px var(--glass-shadow);
         }
 
         .admin-panel.active { display: block; }
-        .admin-panel h3 { margin-bottom: 15px; }
+        .admin-panel h3 { margin-bottom: 20px; font-weight: 600; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .file-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .file-input-group input[type="url"] {
-            flex: 1;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 16px; }
+        .file-input-group { display: flex; gap: 12px; align-items: center; }
+        .file-input-group input[type="url"] { flex: 1; }
 
         .file-select-btn {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--glass-border);
             color: var(--text-color);
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 14px 20px;
+            border-radius: 14px;
             cursor: pointer;
             font-size: 0.9rem;
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            backdrop-filter: blur(10px);
         }
 
         .file-select-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: var(--glass-hover-border);
+            color: #fff;
+            transform: scale(1.05);
         }
 
         #uploadStatus {
             font-size: 0.85rem;
             color: var(--text-sub);
             margin-top: -5px;
+            font-weight: 500;
         }
 
         input[type="text"], input[type="url"], input[type="password"] {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 14px 18px;
+            border-radius: 14px;
             color: var(--text-color);
             outline: none;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        input[type="text"]:focus, input[type="url"]:focus, input[type="password"]:focus {
+            border-color: var(--glass-hover-border);
+            box-shadow: 0 0 15px var(--glass-hover-shadow);
         }
 
         input::placeholder { color: var(--text-sub); }
 
         .btn-submit {
-            background: var(--btn-bg);
-            color: var(--btn-text);
+            background: var(--btn-action);
+            color: #fff;
             border: none;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 14px;
+            border-radius: 14px;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
             margin-top: 5px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.04) translateY(-3px);
+            background: var(--btn-hover-action);
+            box-shadow: 0 12px 25px rgba(67, 233, 123, 0.4);
         }
 
         .btn-submit:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .books-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 35px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1250px;
+            z-index: 10;
         }
 
+        /* KITOB KARTALARI */
         .book-card {
-            position: relative;
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
-            padding: 25px;
+            padding: 28px;
             border: 1px solid var(--glass-border);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 200px;
-            transition: transform 0.3s ease;
+            min-height: 220px;
+            box-shadow: 0 10px 30px var(--glass-shadow);
+            position: relative;
         }
 
-        .book-card::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: conic-gradient(from 0deg, transparent 0deg, #ff0055 90deg, #00e5ff 180deg, #7b00ff 270deg, transparent 360deg);
-            animation: rotate 5s linear infinite;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: -2;
+        .book-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--glass-hover-border);
+            box-shadow: 0 15px 40px var(--glass-hover-shadow), inset 0 0 20px var(--glass-hover-shadow);
         }
-
-        .book-card::after {
-            content: '';
-            position: absolute;
-            inset: 2px;
-            background: var(--card-inner);
-            backdrop-filter: blur(20px);
-            border-radius: 22px;
-            z-index: -1;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .book-card:hover { transform: translateY(-8px); }
-        .book-card:hover::before { opacity: 1; }
 
         .book-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
             word-break: break-word;
+            line-height: 1.3;
         }
 
         .book-author {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--text-sub);
-            margin-bottom: 8px;
+            margin-bottom: 15px;
+            font-style: italic;
         }
 
         .download-count {
             font-size: 0.85rem;
             color: var(--text-sub);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            font-weight: 500;
         }
 
         .card-bottom {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
+            margin-top: auto;
         }
 
         .download-btn {
-            background: var(--btn-bg);
+            background: var(--btn-action);
             color: #fff;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 14px;
-            font-size: 0.85rem;
+            padding: 12px 20px;
+            border-radius: 16px;
+            font-size: 0.9rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             border: none;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .download-btn:hover {
+            transform: scale(1.08) translateY(-2px);
+            background: var(--btn-hover-action);
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.3);
         }
 
         .edit-btn, .delete-btn {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.08);
             border: 1px solid var(--glass-border);
             color: var(--text-color);
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.75rem;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
             cursor: pointer;
-            margin-left: 5px;
+            margin-left: 8px;
+            backdrop-filter: blur(10px);
         }
 
-        .delete-btn { background: rgba(255, 59, 48, 0.3); }
+        .edit-btn:hover {
+            background: rgba(72, 198, 239, 0.5);
+            transform: scale(1.15);
+        }
 
+        .delete-btn:hover {
+            background: rgba(255, 59, 48, 0.6);
+            border-color: rgba(255, 59, 48, 0.8);
+            transform: scale(1.15);
+        }
+
+        /* MODAL OYNA */
         .modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s;
+            transition: opacity 0.4s ease;
             z-index: 1000;
         }
 
         .modal.active { opacity: 1; pointer-events: all; }
 
         .modal-box {
-            background: var(--card-inner);
+            background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            padding: 30px;
-            border-radius: 20px;
+            padding: 35px;
+            border-radius: 24px;
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .modal.active .modal-box {
+            transform: scale(1);
+        }
+        
+        .modal-box .btn-glass {
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
         }
     </style>
 
@@ -302,6 +396,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
+
+    <!-- Liquid Glass orqa fon detallari -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
 
     <div class="top-controls">
         <button class="btn-glass" id="adminAuthBtn" onclick="openLoginModal()">🔑 Admin Kirish</button>
@@ -333,12 +431,12 @@
 
     <div class="modal" id="loginModal">
         <div class="modal-box">
-            <h3 style="margin-bottom: 15px;">Admin Tizimiga Kirish</h3>
+            <h3 style="margin-bottom: 20px; font-weight: 600;">Admin Tizimiga Kirish</h3>
             <div class="form-group">
                 <input type="text" id="adminUsername" placeholder="Login">
                 <input type="password" id="adminPassword" placeholder="Parol">
                 <button class="btn-submit" onclick="checkAdmin()">Kirish</button>
-                <button class="btn-glass" onclick="closeLoginModal()" style="margin-top: 5px;">Yopish</button>
+                <button class="btn-glass" onclick="closeLoginModal()">Yopish</button>
             </div>
         </div>
     </div>
@@ -360,8 +458,7 @@
         let isAdmin = false;
         let globalBooks = [];
 
-        // GitHub Integratsiyasi
-        const GITHUB_TOKEN = "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";
+        // GitHub Integratsiyasi sozlamalari (Token endi dinamik olinadi)
         const GITHUB_USERNAME = "firdavs-2810";
         const GITHUB_REPO = "source";
 
@@ -373,62 +470,77 @@
             const linkInput = document.getElementById('bookLinkInput');
             const submitBtn = document.getElementById('uploadBtn');
 
-            statusDiv.innerHTML = "⏳ Fayl GitHub'ga yuklanmoqda...";
-            statusDiv.style.color = "#00c6ff";
+            statusDiv.innerHTML = "⏳ GitHubga fayl yuklanmoqda...";
+            statusDiv.style.color = "var(--glass-hover-border)";
             submitBtn.disabled = true;
 
             try {
-                // Faylni Base64 ga aylantirish
+                // 1-qadam: Tokenni Firebase'dan olish
+                const tokenSnapshot = await db.ref('token').once('value');
+                const dynamicGitHubToken = tokenSnapshot.val();
+
+                if (!dynamicGitHubToken) {
+                    throw new Error("GitHub token bazadan topilmadi!");
+                }
+
+                // 2-qadam: Faylni o'qish va yuklash
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 
                 reader.onload = async function () {
-                    const base64Content = reader.result.split(',')[1];
-                    const fileName = Date.now() + "_" + file.name.replace(/\s+/g, "_");
-                    const path = `files/${fileName}`;
+                    try {
+                        const base64Content = reader.result.split(',')[1];
+                        const fileName = Date.now() + "_" + file.name.replace(/\s+/g, "_");
+                        const path = `files/${fileName}`;
 
-                    const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${path}`;
+                        const url = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${path}`;
 
-                    const response = await fetch(url, {
-                        method: "PUT",
-                        headers: {
-                            "Authorization": `token ${GITHUB_TOKEN}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            message: `Upload file: ${fileName}`,
-                            content: base64Content
-                        })
-                    });
+                        const response = await fetch(url, {
+                            method: "PUT",
+                            headers: {
+                                "Authorization": `token ${dynamicGitHubToken}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                message: `Upload file: ${fileName}`,
+                                content: base64Content
+                            })
+                        });
 
-                    if (response.ok) {
-                        const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${path}`;
-                        linkInput.value = rawUrl;
-                        statusDiv.innerHTML = "✅ Fayl muvaffaqiyatli yuklandi!";
-                        statusDiv.style.color = "#4caf50";
-                    } else {
-                        const errorData = await response.json();
-                        statusDiv.innerHTML = "❌ Yuklashda xatolik: " + (errorData.message || "Noma'lum xato");
-                        statusDiv.style.color = "#f44336";
+                        if (response.ok) {
+                            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${path}`;
+                            linkInput.value = rawUrl;
+                            statusDiv.innerHTML = "✅ Fayl muvaffaqiyatli yuklandi!";
+                            statusDiv.style.color = "#4caf50";
+                        } else {
+                            const errorData = await response.json();
+                            statusDiv.innerHTML = "❌ Yuklashda xatolik: " + (errorData.message || "Noma'lum xato");
+                            statusDiv.style.color = "#ff4757";
+                        }
+                    } catch (err) {
+                        statusDiv.innerHTML = "❌ Xatolik: " + err.message;
+                        statusDiv.style.color = "#ff4757";
+                    } finally {
+                        submitBtn.disabled = false;
+                        fileInput.value = "";
                     }
-                    submitBtn.disabled = false;
-                    fileInput.value = "";
                 };
 
                 reader.onerror = function () {
                     statusDiv.innerHTML = "❌ Faylni o'qishda xatolik yuz berdi.";
-                    statusDiv.style.color = "#f44336";
+                    statusDiv.style.color = "#ff4757";
                     submitBtn.disabled = false;
                 };
 
             } catch (error) {
                 statusDiv.innerHTML = "❌ Xatolik: " + error.message;
-                statusDiv.style.color = "#f44336";
+                statusDiv.style.color = "#ff4757";
                 submitBtn.disabled = false;
+                fileInput.value = "";
             }
         }
 
-        // Realtime Database-dan kitoblarni real-vaqt rejimida olish
+        // Realtime Database-dan kitoblarni olish
         db.ref("books").on("value", (snapshot) => {
             globalBooks = [];
             if (snapshot.exists()) {
@@ -438,7 +550,6 @@
                         ...childSnapshot.val()
                     });
                 });
-                // Yangi qo'shilgan kitoblarni tepada ko'rsatish uchun tartibni teskari qilamiz
                 globalBooks.reverse();
             }
             renderBooks(globalBooks);
@@ -523,12 +634,10 @@
 
         async function downloadFile(id, url, title) {
             try {
-                // Realtime Database-da downloads sonini 1 ga oshirish (atomic transaction)
                 db.ref(`books/${id}/downloads`).transaction((currentDownloads) => {
                     return (currentDownloads || 0) + 1;
                 });
 
-                // Faylni yuklab olish
                 const response = await fetch(url);
                 const blob = await response.blob();
                 const blobUrl = window.URL.createObjectURL(blob);
@@ -542,7 +651,6 @@
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(blobUrl);
             } catch (error) {
-                // CORS cheklovi bo'lsa, to'g'ridan-to'g'ri yangi oynada ochish
                 window.open(url, '_blank');
             }
         }
@@ -562,7 +670,6 @@
                 uploadBtn.innerText = 'Saqlanmoqda...';
                 uploadBtn.disabled = true;
 
-                // Realtime Database-ga yangi kitob qo'shish
                 await db.ref("books").push({
                     title: title,
                     author: author,
