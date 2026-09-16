@@ -147,6 +147,7 @@
             text-shadow: 0 10px 30px rgba(0,0,0,0.3);
             letter-spacing: 1px;
             font-weight: 700;
+            text-align: center;
         }
 
         /* Admin Paneli Glassmorphism */
@@ -389,6 +390,81 @@
             margin-top: 10px;
             padding: 14px;
         }
+
+        /* FOOTER (Ziyorat va Dasturchi) */
+        .footer-info {
+            margin-top: auto; /* Avtomatik ravishda sahifaning eng pastiga itaradi */
+            padding-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .visits-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .developer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+
+        .developer-link:hover {
+            background: rgba(36, 161, 222, 0.1); /* Telegram color soft bg */
+            border-color: #24A1DE;
+            color: #24A1DE;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(36, 161, 222, 0.2);
+        }
+
+        body.light-mode .developer-link:hover {
+            background: rgba(0, 136, 204, 0.1);
+            border-color: #0088cc;
+            color: #0088cc;
+        }
+
+        /* Ikonkalar (SVG) */
+        .svg-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .svg-icon-stroke {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
     </style>
 
     <!-- Firebase SDK (v8) -->
@@ -429,6 +505,30 @@
 
     <div class="books-grid" id="booksGrid"></div>
 
+    <!-- FOOTER QISMI (Yangi qo'shildi) -->
+    <div class="footer-info">
+        <div class="visits-badge">
+            Total visits: <span id="visitCount">...</span>
+            <svg class="svg-icon-stroke" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </div>
+
+        <a href="https://t.me/firdavs_2810" target="_blank" rel="noopener noreferrer" class="developer-link">
+            Developer: 
+            <svg class="svg-icon" viewBox="0 0 24 24">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            </svg>
+            Firdavs
+            <svg class="svg-icon-stroke" viewBox="0 0 24 24">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+        </a>
+    </div>
+
     <div class="modal" id="loginModal">
         <div class="modal-box">
             <h3 style="margin-bottom: 20px; font-weight: 600;">Admin Tizimiga Kirish</h3>
@@ -458,9 +558,29 @@
         let isAdmin = false;
         let globalBooks = [];
 
-        // GitHub Integratsiyasi sozlamalari (Token endi dinamik olinadi)
+        // GitHub Integratsiyasi sozlamalari 
         const GITHUB_USERNAME = "firdavs-2810";
         const GITHUB_REPO = "source";
+
+        // TASHRIFLARNI HISOBLASH FUNKSIYASI (Yangi qo'shildi)
+        function incrementAndGetVisits() {
+            const visitsRef = db.ref('stats/totalVisits');
+            
+            // Transaction yordamida ma'lumotlarni xavfsiz yangilash (bir vaqtda bir nechta odam kirganda ham to'g'ri sanaydi)
+            visitsRef.transaction((currentVisits) => {
+                return (currentVisits || 0) + 1;
+            }, (error, committed, snapshot) => {
+                if (error) {
+                    console.error("Tashriflarni hisoblashda xatolik:", error);
+                    document.getElementById('visitCount').innerText = "Xato";
+                } else if (committed) {
+                    document.getElementById('visitCount').innerText = snapshot.val();
+                }
+            });
+        }
+        
+        // Sahifa yuklanganda tashrifni yozish
+        window.addEventListener('DOMContentLoaded', incrementAndGetVisits);
 
         async function uploadToGitHub(fileInput) {
             const file = fileInput.files[0];
@@ -470,12 +590,11 @@
             const linkInput = document.getElementById('bookLinkInput');
             const submitBtn = document.getElementById('uploadBtn');
 
-            statusDiv.innerHTML = "⏳ GitHubga fayl yuklanmoqda...";
+            statusDiv.innerHTML = "⏳ GitHub token olinmoqda va fayl yuklanmoqda...";
             statusDiv.style.color = "var(--glass-hover-border)";
             submitBtn.disabled = true;
 
             try {
-                // 1-qadam: Tokenni Firebase'dan olish
                 const tokenSnapshot = await db.ref('token').once('value');
                 const dynamicGitHubToken = tokenSnapshot.val();
 
@@ -483,7 +602,6 @@
                     throw new Error("GitHub token bazadan topilmadi!");
                 }
 
-                // 2-qadam: Faylni o'qish va yuklash
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 
@@ -540,7 +658,6 @@
             }
         }
 
-        // Realtime Database-dan kitoblarni olish
         db.ref("books").on("value", (snapshot) => {
             globalBooks = [];
             if (snapshot.exists()) {
@@ -624,7 +741,7 @@
                         <div class="download-count">📥 <span>${downloads}</span> marta yuklangan</div>
                     </div>
                     <div class="card-bottom">
-                        <a href="${escapeHtml(book.linkUrl)}" target="_blank" rel="noopener noreferrer" class="download-btn">📥 Tortib olish</a>
+                        <a href="${escapeHtml(book.linkUrl)}" target="_blank" rel="noopener noreferrer" class="download-btn" onclick="registerDownload('${book.id}')">📥 Tortib olish</a>
                         ${adminControls}
                     </div>
                 `;
@@ -632,27 +749,11 @@
             });
         }
 
-        async function downloadFile(id, url, title) {
-            try {
-                db.ref(`books/${id}/downloads`).transaction((currentDownloads) => {
-                    return (currentDownloads || 0) + 1;
-                });
-
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = `${title}.pdf`;
-                document.body.appendChild(link);
-                link.click();
-                
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            } catch (error) {
-                window.open(url, '_blank');
-            }
+        // Yuklab olish tugmasi bosilganda sonini oshirish
+        function registerDownload(id) {
+             db.ref(`books/${id}/downloads`).transaction((currentDownloads) => {
+                 return (currentDownloads || 0) + 1;
+             });
         }
 
         async function addNewBook() {
